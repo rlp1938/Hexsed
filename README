@@ -1,0 +1,46 @@
+README for hexsed.
+Hexsed is a stream editor that uses hex values in the find string and
+the replacement string if any.
+There are only 2 commands, 's' substitute and 'd' delete and the only
+permissible field separator is '/'.
+The hex values must be input as a 2 char string, eg 0A, 01, not A or 1.
+It operates on a named file and writes to stdout.
+There are options provided to generate the hex symbols for ascii chars,
+escape sequences, decimal digits and octal digits.
+
+Why I wrote it.
+I had a PDF supplied that was in A4 landscape format and was
+prodigiously wasteful of space, so I decided that I would copy it off
+the PDF reader display it and paste it into LibreOfficeCalc with the
+intention of making an A4 portrait PDF from it.
+
+However in LO all spaces between words using Latin chars got lost.
+Pasting into the editor Geany got me nothing sensible but in Gvim it
+was quite useable. Though the display was fine, Gvim did not allow me to
+do any global replacements so I next tried Ghex. That was good for
+showing me the offending hex chars but I found it very cumbersome to use
+as an editor. In any case I prefer a stream editor for such a job.
+
+Below is how a small file written by Gvim shows in `less`.
+Hello<U+2028>
+Good-bye<U+2028>
+My<U+2028>name<U+2028>is...<U+2028>
+What<U+2028>is<U+2028>your<U+2028>name?<U+2028>
+สวัสดี ค่ะ /ครับ <U+2028>
+ลาก่อน นะ ค่ะ /ครับ <U+2028>
+ดิฉัน /ผม ชื่อ ... ค่ะ /ครับ <U+2028>
+คุณ ชื่อ อะไร คะ/ครับ <U+2028>
+sa-wàt-dee<U+2028>kâ/kráp<U+2028>
+laa<U+2028>gòn<U+2028>ná<U+2028>kâ/kráp<U+2028>
+dì-chăn<U+2028>chêu...<U+2028>kâ/kráp<U+2028>
+koon<U+2028>chêu<U+2028>a-rai<U+2028><U+2028>ká/kráp<U+2028>
+
+As it happens the unicode expression <U+2028> comprises 3 bytes
+containing E2 80 A8.
+So running hexsed as below dealt with all these artifacts.
+`hexsed /E280A80A/0A/s tmpfil > x`	# deal with \n
+mv x tmpfil
+`hexsed /E280A8/20/s tmpfil > x`	# replace them with ' '
+mv x tmpfil
+After reloading Gvim as prompted, the text it showed was now useable in
+LOCalc.
