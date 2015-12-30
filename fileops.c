@@ -268,7 +268,8 @@ int isrunning(char **proglist){
 		FILE *fpi = fopen(buf, "r");
 		if (fpi) {	// it maybe dissappeared already
 			char readbuf[NAME_MAX];
-			fscanf(fpi, "%s", readbuf);
+			int res = fscanf(fpi, "%s", readbuf);
+			res++;	// stop gcc bitching
 			int i = 0;
 			while(proglist[i]) {
 				if (strcmp(proglist[i], readbuf) == 0) result = 1;

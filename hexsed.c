@@ -259,9 +259,6 @@ sedex validate_expr(const char *expr)
 		exit(EXIT_FAILURE);
 	}
 
-	}
-
-
 	if (mysx.rlen) {
 		mysx.toreplace = malloc(sizeof(char) * mysx.rlen);
 		// I'm not really sure if I should bother about this for
