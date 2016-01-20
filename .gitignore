@@ -28,10 +28,8 @@
 /configure
 /configure.scan
 /depcomp
-/ChangeLog
 /INSTALL
 /Makefile.in
-/NEWS
 /aclocal.m4
 /compile
 /install-sh
