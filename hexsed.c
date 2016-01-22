@@ -36,8 +36,8 @@ static char *helpmsg="\nNAME hexsed - a stream editor for hex values.\n"
   "\n\tOptions:\n"
   "\t-h outputs this help message.\n"
   "\t-a char - outputs the hex value of char.\n"
-  "\t-e \char. Outputs  the  2  digit  hex representation of the escape"
-  "\n\tsequence input. Single digits only.\n"
+  "\t-e \\char. Outputs  the  2  digit  hex representation of the escape"
+  "\n\tsequence input. Single char only.\n"
   "\t-i decimal digits - ouputs the hex value of the digits.\n"
   "\t   Range 0-255. Outside that range is an error.\n"
   "\t-o octal digits - outputs the hex value of the digits.\n"
@@ -246,6 +246,19 @@ sedex validate_expr(const char *expr)
 			cp++;
 		}
 	}
+	// check that we don't have 0 length strings
+	if (mysx.flen == 0) {
+		fprintf(stderr, "Zero length search string input %s\n", expr);
+		exit(EXIT_FAILURE);
+	}
+	if (mysx.op == 's') {
+		if (mysx.rlen == 0) {
+		fprintf(stderr, "Zero length replacement string input %s\n"
+					, expr);
+		exit(EXIT_FAILURE);
+		}
+	}
+
 	// check that user has not obviously fubarred the hex input
 	if (mysx.flen %2 != 0 || mysx.rlen %2 != 0) {
 		fprintf(stderr, "Each hex value must be input as a pair,"
