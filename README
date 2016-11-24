@@ -21,6 +21,10 @@ do any global replacements so I next tried Ghex. That was good for
 showing me the offending hex chars but I found it very cumbersome to use
 as an editor. In any case I prefer a stream editor for such a job.
 
+NB, using geany version 1.27 I find that it can handle <U+2028>, which
+it now displays as 'LS' just fine, including doing global replacements.
+However hexsed is still my prefered tool for this kind of job.
+
 Below is how a small file written by Gvim shows in `less`.
 Hello<U+2028>
 Good-bye<U+2028>
@@ -44,3 +48,15 @@ mv x tmpfil
 mv x tmpfil
 After reloading Gvim as prompted, the text it showed was now useable in
 LOCalc.
+
+As well as doing the stream editing, hexsed has options that will
+generate the string of hex for you from input chars, escape sequences
+and strings. The strings may contain escape sequences.
+Eg hexsed -s '</p><p>' yields
+3C2F703E3C703E
+and hexsed -s '</p>\n<p>' yields
+3C2F703E0A3C703E
+so then,
+hexsed /3C2F703E3C703E/3C2F703E0A3C703E/s some.html
+will put a linefeed between all such tag pairs in some.html .
+See man 1 hexsed .

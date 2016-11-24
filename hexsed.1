@@ -1,4 +1,4 @@
-.TH "hexsed" 1 "2016-01-21" "Linux User's Manual"
+.TH "hexsed" 1 "2016-11-25" "Linux User's Manual"
 
 
 .SH NAME
@@ -21,6 +21,10 @@ in ASCII. The edited result is sent to \fIstdout\fR.
 .P
 \fBhexsed\fR \-[a|e|i|o] char|esc sequence.
 Delivers the 2 digit hex ASCII string that represents the input char.
+
+.P
+\fBhexsed\fR \-s string
+Delivers the 2 didgit hex ASCII string for each byte in string.
 
 .SH DESCRIPTION
 
@@ -53,6 +57,11 @@ Legal range is 0 \- 255, outside range is an error.
  \fB\-o\fR
 octal digits. Outputs the 2 digit hex representation of the digits input.
 Legal range is 0 \- 377, outside range is an error.
+
+.TP
+ \fB\-s\fR
+Null terminated array of bytes. Outputs the 2 digit hex representation
+of each byte in the string.
 
 .TP
  \fB\-n\fR

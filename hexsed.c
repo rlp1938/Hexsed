@@ -1,7 +1,7 @@
 
-/*      hexsed.c - stream editor uses hex strings
+/*      hexsed.c - stream editor that uses hex strings
  *
- *	Copyright 2015 Bob Parker rlp1938@gmail.com
+ *	Copyright 2016 Bob Parker rlp1938@gmail.com
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -33,15 +33,18 @@ static char *helpmsg="\nNAME hexsed - a stream editor for hex values.\n"
   "\thexsed [-n] /hex values to find/d filename\n"
   "\thexsed [-n] /hex values to find/hex values to replace/s filename\n"
   "\thexsed -[a|i] parameter\n"
+  "\thexsed -s string\n"
   "\n\tOptions:\n"
   "\t-h outputs this help message.\n"
   "\t-a char - outputs the hex value of char.\n"
-  "\t-e \\char. Outputs  the  2  digit  hex representation of the escape"
+  "\t-e \\char. Outputs the 2 digit hex representation of the escape"
   "\n\tsequence input. Single char only.\n"
   "\t-i decimal digits - ouputs the hex value of the digits.\n"
   "\t   Range 0-255. Outside that range is an error.\n"
   "\t-o octal digits - outputs the hex value of the digits.\n"
   "\t   Range 0-377. Outside that range is an error.\n"
+  "\t-s string. Outputs the 2 byte hex representation of every byte\n"
+  "\t   in the input string. Multibyte strings are accepted also.\n"
   "\t-n Causes the count of applied expression to be output.\n"
   ;
 
@@ -57,6 +60,7 @@ static char *eslookup(const char *tofind);
 static void dohelp(int forced);
 static sedex validate_expr(const char *expr);
 static uint8_t hex2char(const char *hh, int *ecode);
+static char *str2hex(const char *str);
 
 int main(int argc, char **argv)
 {
@@ -65,8 +69,9 @@ int main(int argc, char **argv)
 	unsigned int ci;
 	int quiet = 1;	// default no report
 
-	while((opt = getopt(argc, argv, ":ha:e:i:o:n")) != -1) {
+	while((opt = getopt(argc, argv, ":ha:e:i:o:ns:")) != -1) {
 		switch(opt){
+		char *line;
 		case 'h':
 			dohelp(0);
 		break;
@@ -93,6 +98,12 @@ int main(int argc, char **argv)
 		// Where is case 'u' ?
 		case 'n':
 			quiet = 0;
+		break;
+		case 's':	// string
+			line = str2hex(optarg);
+			fprintf(stdout, "%s\n", line);
+			free(line);
+			exit(EXIT_SUCCESS);
 		break;
 		case ':':
 			fprintf(stderr, "Option %c requires an argument\n",optopt);
@@ -361,5 +372,31 @@ uint8_t hex2char(const char* hh, int *ecode)
 		}
 	}
 	*ecode = -1;	// failed
-	return 0;	// legal value but ecode over rides it.
+	return *ecode;
+}
+
+char *str2hex(const char *str)
+{	/* For each byte in str, return the 2 byte hex code.
+	 * Handle embedded escape sequences.
+	 * */
+	size_t len = strlen(str);
+	char *buf = calloc(2 * len + 1, 1);
+	if (!buf) {
+		perror("Could not get memory in str2hex()");
+		exit(EXIT_FAILURE);
+	}
+	size_t i, idx;	// need 2 indexes to handle escape sequences.
+	for (idx=0, i=0; i < len; i++, idx++) {
+		char res[3] = {0};
+		if (str[i] == '\\') {
+			strncpy(res, &str[i], 2);
+			char *cp = eslookup(res);
+			strncpy(res, cp, 2);
+			i++;	// get past the escaped char
+		} else {
+			sprintf(res, "%X", str[i]);
+		}
+		strncpy(&buf[2*idx], res, 2);
+	}
+	return buf;
 }
