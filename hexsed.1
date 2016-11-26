@@ -1,4 +1,4 @@
-.TH "hexsed" 1 "2016-11-25" "Linux User's Manual"
+.TH "hexsed" 1 "2016-11-27" "Linux User's Manual"
 
 
 .SH NAME
@@ -9,14 +9,18 @@
 .SH SYNOPSIS
 
 .P
-\fBhexsed\fR [\-n] /find/d filename
+\fBhexsed\fR [\-n] [=count]/find/d filename
 
 .P
-\fBhexsed\fR [\-n] /find/replace/s filename
+\fBhexsed\fR [\-n] [=count]/find/replace/s filename
 
 .P
 Where both find and replace must be strings of hex digits expressed
 in ASCII. The edited result is sent to \fIstdout\fR.
+
+.P
+The optional count if specified will cause editing to quit once the
+number of edits performed reaches the specified count.
 
 .P
 \fBhexsed\fR \-[a|e|i|o] char|esc sequence.
@@ -61,11 +65,11 @@ Legal range is 0 \- 377, outside range is an error.
 .TP
  \fB\-s\fR
 Null terminated array of bytes. Outputs the 2 digit hex representation
-of each byte in the string.
+of each byte in the string. Escape sequences like \en, \et may be included.
 
 .TP
  \fB\-n\fR
-Causes the count of applied expression to be output.
+Causes the count of applied edits to be output.
 
 .SH AUTHOR
 
