@@ -19,7 +19,6 @@
  *	MA 02110-1301, USA.
 */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,33 +26,7 @@
 #include <getopt.h>
 #include <stdint.h>
 #include "fileops.h"
-
-static char *helpmsg="\nNAME hexsed - a stream editor for hex values.\n"
-  "\tSYNOPSIS\n"
-  "\thexsed [-n] [=count]/hex values to find/d filename\n"
-  "\thexsed [-n] [=count]/hex values to find/values to replace/s "
-  "filename\n"
-  "\thexsed -[a|i] parameter\n"
-  "\thexsed -s string\n"
-  "\tThe program writes the edited result to stdout.\n"
-  "\tIf the optional count is used editing will quit once the count \n"
-  "\tof edits equals the value of the specified count.\n"
-  "\tThe suffix operator may have the values 'd' or 's', being delete\n"
-  "\tor substitute respectively.\n\n"
-  "\n\tOptions:\n"
-  "\t-h outputs this help message.\n"
-  "\t-a char - outputs the hex value of char.\n"
-  "\t-e \\char. Outputs the 2 digit hex representation of the escape"
-  "\n\t   sequence input. Single char only.\n"
-  "\t-i decimal digits - ouputs the hex value of the digits.\n"
-  "\t   Range 0-255. Outside that range is an error.\n"
-  "\t-o octal digits - outputs the hex value of the digits.\n"
-  "\t   Range 0-377. Outside that range is an error.\n"
-  "\t-s string. Outputs the 2 byte hex representation of every byte\n"
-  "\t   in the input string. Multibyte strings are accepted also.\n"
-  "\t   Escape sequences like \\t or \\n may be included in the string.\n"
-  "\t-n Causes the count of applied expression to be output.\n"
-  ;
+#include "gopt.h"
 
 typedef struct sedex {
 	int op;
@@ -65,7 +38,6 @@ typedef struct sedex {
 } sedex;
 
 static char *eslookup(const char *tofind);
-static void dohelp(int forced);
 static sedex validate_expr(const char *expr);
 static char *str2hex(const char *str);
 static int validatehexstr(const char *hexstr);
@@ -74,76 +46,23 @@ static int hexchar2int(const char *hexpair);
 
 int main(int argc, char **argv)
 {
-	int opt;
-	char ch = 0;
-	unsigned int ci;
-	int quiet = 1;	// default no report
-
-	while((opt = getopt(argc, argv, ":ha:e:i:o:ns:")) != -1) {
-		switch(opt){
-		char *line;
-		case 'h':
-			dohelp(0);
-		break;
-		case 'a':	// ascii char
-			ch = optarg[0];
-			ci = ch;
-			fprintf(stdout, "%X\n", ci);
-			exit(EXIT_SUCCESS);
-		break;
-		case 'e':	// escape sequence, \n etc
-			fprintf(stdout, "%s\n", eslookup(optarg));
-			exit(EXIT_SUCCESS);
-		break;
-		case 'i':	// int
-			ci = strtoul(optarg, NULL, 10);
-			fprintf(stdout, "%X\n", ci);
-			exit(EXIT_SUCCESS);
-		break;
-		case 'o':	// octal
-			ci = strtoul(optarg, NULL, 8);
-			fprintf(stdout, "%X\n", ci);
-			exit(EXIT_SUCCESS);
-		break;
-		// Where is case 'u' ?
-		case 'n':
-			quiet = 0;
-		break;
-		case 's':	// string
-			line = str2hex(optarg);
-			fprintf(stdout, "%s\n", line);
-			free(line);
-			exit(EXIT_SUCCESS);
-		break;
-		case ':':
-			fprintf(stderr, "Option %c requires an argument\n",optopt);
-			dohelp(1);
-		break;
-		case '?':
-			fprintf(stderr, "Illegal option: %c\n",optopt);
-			dohelp(1);
-		break;
-		} //switch()
-	}//while()
-	// now process the non-option arguments
-
-/*	test for hexchar2int()
-	int i;
-	char *fmt1 = "%d %x %d %d\t";
-	char *fmt2 = "%d %x %d %d\n";
-
-	for (i = 0; i < 256; i++) {
-		char buf[5];
-		char *fmt = (i % 4 == 3)? fmt2:fmt1;
-		sprintf(buf, "%.2x", i);
-		int res = hexchar2int(buf);
-		printf(fmt, i, i, res, res-i);
-		if (i<10) fputs("\t", stdout);
+	options_t opts = process_options(argc, argv);
+	// 3 opts vars are processed here, the other is dealt with in gopt.
+	int quiet = opts.quiet;
+	if (opts.line) {
+		char *cp = str2hex(opts.line);
+		fprintf(stdout, "%s\n", cp);
+		free(cp);
+		free(opts.line);
+		exit(EXIT_SUCCESS);
 	}
-	fputs("\n", stdout);
+	if (opts.esc) {
+		fprintf(stdout, "%s\n", eslookup(opts.esc));
+		free(opts.esc);
+		exit(EXIT_SUCCESS);
+	}
 
-	exit(0);
-*/
+	// now process the non-option arguments
 
 	// 1.Check that argv[optind] exists.
 	if (!(argv[optind])) {
@@ -198,12 +117,6 @@ int main(int argc, char **argv)
 	free(mysx.tofind);
 	return 0;
 }//main()
-
-void dohelp(int forced)
-{
-  fputs(helpmsg, stderr);
-  exit(forced);
-}
 
 char *eslookup(const char *tofind)
 {

@@ -1,4 +1,4 @@
-.TH "hexsed" 1 "2016-11-27" "Linux User's Manual"
+.TH "hexsed" 1 "2016-11-30" "Linux User's Manual"
 
 
 .SH NAME
@@ -20,7 +20,7 @@ in ASCII. The edited result is sent to \fIstdout\fR.
 
 .P
 The optional count if specified will cause editing to quit once the
-number of edits performed reaches the specified count.
+number of edits performed reaches that count.
 
 .P
 \fBhexsed\fR \-[a|e|i|o] char|esc sequence.
@@ -40,35 +40,36 @@ input. Optionally it will write a count of the deletions or changes.
 .SH OPTIONS
 
 .TP
- \fB\-h\fR
+ \fB\-h, \-\-help\fR
 print help information and exit.
 
 .TP
- \fB\-a\fR
-char. Outputs the 2 digit hex representation of the char input.
+ \fB\-a, \-\-ascii\fR
+Char. Outputs the 2 digit hex representation of the char input. Must be
+a single byte char, use \-\-string for multi\-byte chars.
 
 .TP
- \fB\-e\fR
+ \fB\-e, \-\-escape\fR
 \echar. Outputs the 2 digit hex representation of the escape
-sequence input. Single digits only.
+sequence input. Single byte only after '\e'.
 
 .TP
- \fB\-i\fR
-decimal digits. Outputs the 2 digit hex representation of the digits input.
+ \fB\-i, \-\-integer\fR
+Decimal digits. Outputs the 2 digit hex representation of the digits input.
 Legal range is 0 \- 255, outside range is an error.
 
 .TP
- \fB\-o\fR
-octal digits. Outputs the 2 digit hex representation of the digits input.
+ \fB\-o, \-\-octal\fR
+Octal digits. Outputs the 2 digit hex representation of the digits input.
 Legal range is 0 \- 377, outside range is an error.
 
 .TP
- \fB\-s\fR
+ \fB\-s, \-\-string\fR
 Null terminated array of bytes. Outputs the 2 digit hex representation
 of each byte in the string. Escape sequences like \en, \et may be included.
 
 .TP
- \fB\-n\fR
+ \fB\-n, \-\-edit\-count\fR
 Causes the count of applied edits to be output.
 
 .SH AUTHOR

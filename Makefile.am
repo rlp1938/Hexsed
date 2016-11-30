@@ -3,7 +3,8 @@
 AM_CFLAGS=-Wall -Wextra -D_GNU_SOURCE=1
 
 bin_PROGRAMS=hexsed
-hexsed_SOURCES=hexsed.c fileops.h fileops.c
+hexsed_SOURCES=hexsed.c fileops.h fileops.c gopt.c gopt.h stringops.c \
+stringops.h
 
 man_MANS=hexsed.1
 EXTRA_DIST=hexsed.1
