@@ -175,22 +175,21 @@ sedex validate_expr(const char *expr)
 	if (!(count == 2 || count == 3)) {
 		badform = 1;
 	}
-	if(!(buf[len - 1] == 'd' || buf[len - 1] == 's')) {
+	char op = buf[len-1];
+	cp = strchr("dsai", op);
+	if (!cp) badform = 1;
+	if (op == 'd' && count != 2) {
 		badform = 1;
+	} else {
+		if (count != 3) badform = 1;
 	}
-	if (buf[len - 1] == 'd' && count == 3) {
-		badform = 1;
-	}
-	if (buf[len - 1] == 's' && count == 2) {
-		badform = 1;
-	};
 	if (badform) {
 		fprintf(stderr, "Badly formed expression:\n%s\n", expr);
 		exit(EXIT_FAILURE);
 	}
 
 	// format the hex lists
-	mysx.op = buf[len - 1];
+	mysx.op = op;
 	mysx.flen = mysx.rlen = 0;
 	// calculate lengths
 	cp = buf;
@@ -325,34 +324,21 @@ char *hex2asc(const char *hexstr)
 }
 
 int hexchar2int(const char *hexpair)
-{	/* get the int value for hexpair 00, 01, .... ,FE, FF */
-	char test[5] = {0};
-	char *list =
-	"0X000X010X020X030X040X050X060X070X080X090X0A0X0B0X0C0X0D0X0E0X0F"
-	"0X100X110X120X130X140X150X160X170X180X190X1A0X1B0X1C0X1D0X1E0X1F"
-	"0X200X210X220X230X240X250X260X270X280X290X2A0X2B0X2C0X2D0X2E0X2F"
-	"0X300X310X320X330X340X350X360X370X380X390X3A0X3B0X3C0X3D0X3E0X3F"
-	"0X400X410X420X430X440X450X460X470X480X490X4A0X4B0X4C0X4D0X4E0X4F"
-	"0X500X510X520X530X540X550X560X570X580X590X5A0X5B0X5C0X5D0X5E0X5F"
-	"0X600X610X620X630X640X650X660X670X680X690X6A0X6B0X6C0X6D0X6E0X6F"
-	"0X700X710X720X730X740X750X760X770X780X790X7A0X7B0X7C0X7D0X7E0X7F"
-	"0X800X810X820X830X840X850X860X870X880X890X8A0X8B0X8C0X8D0X8E0X8F"
-	"0X900X910X920X930X940X950X960X970X980X990X9A0X9B0X9C0X9D0X9E0X9F"
-	"0XA00XA10XA20XA30XA40XA50XA60XA70XA80XA90XAA0XAB0XAC0XAD0XAE0XAF"
-	"0XB00XB10XB20XB30XB40XB50XB60XB70XB80XB90XBA0XBB0XBC0XBD0XBE0XBF"
-	"0XC00XC10XC20XC30XC40XC50XC60XC70XC80XC90XCA0XCB0XCC0XCD0XCE0XCF"
-	"0XD00XD10XD20XD30XD40XD50XD60XD70XD80XD90XDA0XDB0XDC0XDD0XDE0XDF"
-	"0XE00XE10XE20XE30XE40XE50XE60XE70XE80XE90XEA0XEB0XEC0XED0XEE0XEF"
-	"0XF00XF10XF20XF30XF40XF50XF60XF70XF80XF90XFA0XFB0XFC0XFD0XFE0XFF"
-	;
-	strcpy(test, "0X");
-	test[2] = toupper(hexpair[0]);
-	test[3] = toupper(hexpair[1]);
-	char *cp = strstr(list, test);
-	if (!cp) {
-		fprintf(stderr, "Non-hex input: %s\n", hexpair);
-		exit(EXIT_FAILURE);
+{
+	char wrk[3] = {0};
+	int c;
+	char *list = "0123456789ABCDEF";
+	int i;
+	for (i = 0; i < 2; i++) {
+		wrk[i] = toupper(hexpair[i]);
+		char *test = strchr(list, wrk[i]);
+		if (!test) {
+			fputs("\n", stdout);
+			fflush(stdout);
+			fprintf(stderr, "Not legal hex: %s\n", wrk);
+			exit(EXIT_FAILURE);
+		}
 	}
-	int res = (cp - list)/4;
-	return res;
-}
+	c = strtol(wrk, NULL, 16);
+	return c;
+} // hexchar2int()
