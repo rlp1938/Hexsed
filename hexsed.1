@@ -1,4 +1,4 @@
-.TH "hexsed" 1 "2016-11-30" "Linux User's Manual"
+.TH "hexsed" 1 "2016-12-04" "Linux User's Manual"
 
 
 .SH NAME
@@ -12,10 +12,14 @@
 \fBhexsed\fR [\-n] [=count]/find/d filename
 
 .P
-\fBhexsed\fR [\-n] [=count]/find/replace/s filename
+\fBhexsed\fR [\-n] [=count]/find/insert/op filename
 
 .P
-Where both find and replace must be strings of hex digits expressed
+where op is one of: i, insert before find string; a, append to find
+string; and r, replace the find string.
+
+.P
+Where both find and insert must be strings of hex digits expressed
 in ASCII. The edited result is sent to \fIstdout\fR.
 
 .P

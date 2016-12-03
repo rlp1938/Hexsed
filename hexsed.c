@@ -43,6 +43,7 @@ static char *str2hex(const char *str);
 static int validatehexstr(const char *hexstr);
 static char *hex2asc(const char *hexstr);
 static int hexchar2int(const char *hexpair);
+static void editfile(const char *fn, sedex mysx, int quiet);
 
 int main(int argc, char **argv)
 {
@@ -80,41 +81,14 @@ int main(int argc, char **argv)
 		dohelp(1);
 	}
 
-	// 4. Check that it's meaningful, ie file/dir exists.
+	// 4. Check that it's meaningful, ie file exists.
 	if (fileexists(argv[optind]) == -1) {
 		fprintf(stderr, "No such file: %s\n", argv[optind]);
 		dohelp(1);
 	}
 	// now do the edits
-	int fcount = 0;
-	fdata mydat = readfile(argv[optind], 0, 0);
-	char *cp = mydat.from;
-	while (cp < mydat.to) {
-		char *found = memmem(cp, mydat.to - cp, mysx.tofind, mysx.flen);
-		int doit;
-		// number of edits may be limited by count.
-		doit = (found && (fcount < mysx.edcount));
-		if (!doit) {
-			fwrite(cp, 1, mydat.to - cp, stdout);
-			cp = mydat.to;
-		} else {
-			fcount++;
-			fwrite(cp, 1, found - cp, stdout);
-			cp = found + mysx.flen;
-			if (mysx.op == 's') {
-				// write out the substitute bytes
-				fwrite(mysx.toreplace, 1, mysx.rlen, stdout);
-			}
-		}
-	} // while()
-	if (!quiet) {
-		char *what = (mysx.op == 'd') ? "deletions" : "substitutions";
-		fprintf(stdout, "Did %i %s.\n", fcount, what);
-	}
-
-	free(mydat.from);
-	if (mysx.toreplace) free(mysx.toreplace);
-	free(mysx.tofind);
+	char *edfile = argv[optind];
+	editfile(edfile, mysx, quiet);
 	return 0;
 }//main()
 
@@ -178,8 +152,8 @@ sedex validate_expr(const char *expr)
 	char op = buf[len-1];
 	cp = strchr("dsai", op);
 	if (!cp) badform = 1;
-	if (op == 'd' && count != 2) {
-		badform = 1;
+	if (op == 'd') {
+		if (count != 2) badform = 1;
 	} else {
 		if (count != 3) badform = 1;
 	}
@@ -232,7 +206,7 @@ sedex validate_expr(const char *expr)
 	char *ep = strchr(cp, '/');	// content of buf is valid.
 	*ep = 0;
 	tofind = strdup(cp);
-	if (mysx.op == 's') {
+	if (mysx.op != 'd') {
 		cp = ep + 1;
 		ep = strchr(cp, '/');
 		*ep = 0;
@@ -250,7 +224,7 @@ sedex validate_expr(const char *expr)
 		free(tofind);
 	}
 
-	if (mysx.op == 's') {
+	if (mysx.op != 'd') {
 		if (validatehexstr(toreplace) == -1) {
 			fprintf(stderr, "invalid hex chars toreplace: \n %s",
 					toreplace);
@@ -342,3 +316,52 @@ int hexchar2int(const char *hexpair)
 	c = strtol(wrk, NULL, 16);
 	return c;
 } // hexchar2int()
+
+void editfile(const char *fn, sedex mysx, int quiet)
+{
+	int fcount = 0;
+	fdata mydat = readfile(fn, 0, 0);
+	char *cp = mydat.from;
+	while (cp < mydat.to) {
+		char *found = memmem(cp, mydat.to - cp, mysx.tofind, mysx.flen);
+		int doit;
+		// number of edits may be limited by count.
+		doit = (found && (fcount < mysx.edcount));
+		if (!doit) {
+			// write out the rest of the file.
+			fwrite(cp, 1, mydat.to - cp, stdout);
+			cp = mydat.to;
+		} else {
+			fcount++;
+			// write the file content up to the find string
+			fwrite(cp, 1, found - cp, stdout);
+			switch (mysx.op)
+			{
+				case 'a':	// append to find string
+					fwrite(mysx.tofind, 1, mysx.rlen, stdout);
+					fwrite(mysx.toreplace, 1, mysx.rlen, stdout);
+					break;
+				case 'i':	// insert before find string
+					fwrite(mysx.toreplace, 1, mysx.rlen, stdout);
+					fwrite(mysx.tofind, 1, mysx.rlen, stdout);
+					break;
+				case 'd':	// delete find string
+					// do nothing
+					break;
+				case 's':	// substitute find string.
+					fwrite(mysx.toreplace, 1, mysx.rlen, stdout);
+					break;
+			} // switch()
+			cp = found + mysx.flen;
+		}
+	} // while()
+	if (!quiet) {
+		char *what = (mysx.op == 'd') ? "deletions" : "substitutions";
+		fprintf(stdout, "Did %i %s.\n", fcount, what);
+	}
+
+	free(mydat.from);
+	if (mysx.toreplace) free(mysx.toreplace);
+	free(mysx.tofind);
+
+} // editfile()
