@@ -47,7 +47,7 @@ options_t process_options(int argc, char **argv)
 	helptext =
   "\tOPTIONS\n"
   "\t-h, --help\n\n"
-  "\tOutputs the is help message and then quits.\n"
+  "\tOutputs this help message and then quits.\n"
   "\t-a, --ascii\n"
   "\tChar. Outputs the 2 digit hex representation of the char input.\n\n"
   "\t-e, --escape\n"

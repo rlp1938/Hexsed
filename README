@@ -1,12 +1,13 @@
 README for hexsed.
 Hexsed is a stream editor that uses hex values in the find string and
 the replacement string if any.
-There are only 2 commands, 's' substitute and 'd' delete and the only
-permissible field separator is '/'.
+There are 4 commands: 's' substitute, 'd' delete, 'a' append, and 'i'
+insert. The only permissible field separator is '/'.
 The hex values must be input as a 2 char string, eg 0A, 01, not A or 1.
 It operates on a named file and writes to stdout.
 There are options provided to generate the hex symbols for ascii chars,
-escape sequences, decimal digits and octal digits.
+escape sequences, decimal digits and octal digits. Also you may use a
+NULL terminated string which may optionally include escaped sequences.
 
 Why I wrote it.
 I had a PDF supplied that was in A4 landscape format and was
